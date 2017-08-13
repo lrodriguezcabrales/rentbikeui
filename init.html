@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset = "UTF-8">
+      <meta http-equiv = "X-UA-Compatible" content = "IE = edge,chrome = 1">
+      <title>Hello World using Backbone.js</title>
+   </head>
+   
+   <body>
+      <!-- ========= -->
+      <!-- Your HTML -->
+      <!-- ========= -->
+      <div id = "container">Loading...</div>
+      <!-- ========= -->
+      <!-- Libraries -->
+      <!-- ========= -->
+      <script src = "https://code.jquery.com/jquery-2.1.3.min.js" type = "text/javascript"></script>
+         
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js" type = "text/javascript"></script>
+         
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone.js" type = "text/javascript"></script>
+      <!-- =============== -->
+      <!-- Javascript code -->
+      <!-- =============== -->
+      
+      <script type = "text/javascript">
+
+         var User = Backbone.Model.extend({
+            defaults:{
+               id: null,
+               email: null,
+               firstname: null,
+               secondname: null,
+               lastname: null,
+               secondlastname: null,
+               password: null,
+               roles: null,
+            },
+            getCustomUrl: function (method) {
+              switch (method) {
+                  case 'read':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+                  case 'create':
+                      return 'http://localhost:51377/api/Books';
+                      break;
+                  case 'update':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+                  case 'delete':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+               }
+            },
+            // Now lets override the sync function to use our custom URLs
+            sync: function (method, model, options) {
+               options || (options = {});
+               options.url = this.getCustomUrl(method.toLowerCase());     
+               // Lets notify backbone to use our URLs and do follow default course
+               return Backbone.sync.apply(this, arguments);
+            }
+         });
+
+         var UserCollection = Backbone.Collection.extend({
+            model: User,
+            /*url: function() {
+             return 'http://localhost/rentbike/web/app_dev.php/user/list';
+           }*/
+                       getCustomUrl: function (method) {
+              switch (method) {
+                  case 'read':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+                  case 'create':
+                      return 'http://localhost:51377/api/Books';
+                      break;
+                  case 'update':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+                  case 'delete':
+                      return 'http://localhost:51377/api/Books/' + this.id;
+                      break;
+               }
+            },
+         });
+
+         listUsers();
+
+         function listUsers () {
+
+            $("ul.datos").html("");
+
+            var coleccion_libros = new UserCollection();
+
+            coleccion_libros.on("add", function(model){
+            
+               console.log("Agregado", model.toJSON());
+               $(".datos").append("<li>"+
+                   JSON.stringify(model.toJSON())+
+                   "</li>"
+                   );
+            });
+
+            var xhr = coleccion_libros.fetch()
+            
+            xhr.done(function () {
+               console.log('Libros descargados...');
+               var llibros = coleccion_libros.filter(function (model) {
+                   var libro = model.toJSON();
+                   return libro.nombre === "El Principito";
+               });
+               if(llibros.length==0){
+            
+                   var libroNuevo = new User({
+                       //"id":"l Principito",
+                       "email":"pepito@gmail.com",
+                       "firstname":"Pepito",
+                       "lastname":"Perez"
+                   }
+                  );
+
+                   libroNuevo.save();
+                   coleccion_libros.add(libroNuevo);
+               }
+               
+               console.log("0k");
+            
+            });
+
+         }
+
+         function addUser() {
+            // body...
+         }
+
+      </script>
+      
+<!--        <form id="form-user">
+                  <div class="form-group">
+                     <label for="name">Nombre</label>
+                     <input type="name" class="form-control" id="name" placeholder="Nombre" required>
+                  </div>
+                  <div class="form-group">
+                     <label for="lastname">Apellido</label>
+                     <input type="lastname" class="form-control" id="lastname" placeholder="Apellido" required>
+                  </div>
+                  <div class="form-group">
+                     <label for="Tipo">Tipo</label>
+                     <select id="type" required>
+                        <option value="ADMIN">Administrador</option>
+                        <option value="DESPACHADOR">Despachador</option>
+                     </select>
+                  </div>
+                  <div class="form-group">
+                     <label for="email">Email</label>
+                     <input type="email" class="form-control" id="email" placeholder="Email" required>
+                  </div>
+                  <div class="form-group">
+                     <label for="password">Contraseña</label>
+                     <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                  </div>
+                 </form>
+               </div>
+               <div class="modal-footer">
+                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                 <button type="submit" class="btn btn-primary" onclick="addUser()">Guardar</button>
+               </div> -->
+
+   </body>
+</html>
