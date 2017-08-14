@@ -39,16 +39,16 @@
             getCustomUrl: function (method) {
               switch (method) {
                   case 'read':
-                      return 'http://localhost:51377/api/Books/' + this.id;
+                      return 'http://localhost/rentbike/web/app_dev.php/user/list';
                       break;
                   case 'create':
-                      return 'http://localhost:51377/api/Books';
+                      return 'http://localhost/rentbike/web/app_dev.php/user/save';
                       break;
                   case 'update':
-                      return 'http://localhost:51377/api/Books/' + this.id;
+                      return 'http://localhost/rentbike/web/app_dev.php/user/update/' + this.id;
                       break;
                   case 'delete':
-                      return 'http://localhost:51377/api/Books/' + this.id;
+                      return 'http://localhost/rentbike/web/app_dev.php/user/delete' + this.id;
                       break;
                }
             },
@@ -66,22 +66,6 @@
             /*url: function() {
              return 'http://localhost/rentbike/web/app_dev.php/user/list';
            }*/
-                       getCustomUrl: function (method) {
-              switch (method) {
-                  case 'read':
-                      return 'http://localhost:51377/api/Books/' + this.id;
-                      break;
-                  case 'create':
-                      return 'http://localhost:51377/api/Books';
-                      break;
-                  case 'update':
-                      return 'http://localhost:51377/api/Books/' + this.id;
-                      break;
-                  case 'delete':
-                      return 'http://localhost:51377/api/Books/' + this.id;
-                      break;
-               }
-            },
          });
 
          listUsers();
@@ -101,8 +85,19 @@
                    );
             });
 
-            var xhr = coleccion_libros.fetch()
+            //var xhr = coleccion_libros.fetch()
             
+            var b1 = new User;
+            var xhr = b1.fetch({
+                       success: function (bookResponse) {
+                           console.log("Found the book: " + bookResponse.get("BookName"));
+                       },
+                       error: function (argument) {
+                          console.log('error')
+                       }
+                   });
+
+
             xhr.done(function () {
                console.log('Libros descargados...');
                var llibros = coleccion_libros.filter(function (model) {
@@ -111,7 +106,7 @@
                });
                if(llibros.length==0){
             
-                   var libroNuevo = new User({
+                   /*var libroNuevo = new User({
                        //"id":"l Principito",
                        "email":"pepito@gmail.com",
                        "firstname":"Pepito",
@@ -120,7 +115,9 @@
                   );
 
                    libroNuevo.save();
-                   coleccion_libros.add(libroNuevo);
+                   coleccion_libros.add(libroNuevo);*/
+
+                   
                }
                
                console.log("0k");
