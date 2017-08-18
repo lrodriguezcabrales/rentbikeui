@@ -35,7 +35,7 @@
        
 
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
-
+      
       <script type = "text/javascript">
 
       //'Router' is a name of the router class
@@ -87,6 +87,53 @@
          });
 
 
+         NewUserView = Backbone.View.extend({
+             //template: _.template($('#ficha_template').html()),
+             render: function(){
+                 
+               var div = $('<div></div>');
+
+               var form = $('<form></form>');
+
+               
+
+               var fields = [];
+
+
+               var firstname = '<input type="text" id="firstname-user"></input>';
+               var secondname = '<input type="text" id="secondname-user"></input>';
+               var lastname = '<input type="text" id="lastname-user"></input>';
+               var secondlastname = '<input type="text" id="secondlastname-user"></input>';
+               var password = '<input type="password" id="password-user"></input>';
+
+               fields.push(firstname);
+               fields.push(secondname);
+               fields.push(lastname);
+               fields.push(secondlastname);
+               fields.push(password);
+
+               for (var i = 0; i < fields.length; i++) {
+                  var field = fields[i];
+                  var formgroup = $('<div class="form-group"></div>');
+                  formgroup.append(field);
+
+                  form.append(formgroup);   
+               }
+
+
+               div.append(form);
+
+               $(this.el).append(div);
+
+               return this;
+
+             }
+         });
+         var ficha = new NewUserView({el:$('body')});
+
+         ficha.render();
+
+
          function listUsers () {
 
             $('#body').append('<div id="jsGrid"></div>');
@@ -136,27 +183,34 @@
          });
 
          function newUser(argument) {
-
-            $('#new-user').show();
-
-
-            /*console.log('Crear Usuario');
-            var newUser = new User({
-               "email":"pepito@gmail.com",
-               "firstname":"Pepito",
-               "lastname":"Perez",
-               "password": "12345"
-               }
-            );
-
-            libroNuevo.save();
-            coleccion_libros.add(newUser);*/
-
+            
          }
+
+         // function newUser(argument) {
+
+         //    $('#new-user').show();
+
+
+         //    /*console.log('Crear Usuario');
+         //    var newUser = new User({
+         //       "email":"pepito@gmail.com",
+         //       "firstname":"Pepito",
+         //       "lastname":"Perez",
+         //       "password": "12345"
+         //       }
+         //    );
+
+         //    libroNuevo.save();
+         //    coleccion_libros.add(newUser);*/
+
+
+
+
+         // }
 
       </script>
 
-      <div id="new-user" style="display: none">
+    <!--   <div id="new-user" style="display: none">
                 <form id="form-user">
                   <div class="form-group">
                      <label for="name">Nombre</label>
@@ -186,7 +240,7 @@
                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
                  <button type="submit" class="btn btn-primary" onclick="addUser()">Guardar</button>
                </div>
-      </div> 
+      </div>  -->
 
 
    </body>
