@@ -41,3 +41,8 @@
     width: 60%;
     font-size: 20px;
 }
+
+.required{
+	color: red;
+	font-weight: bold;
+}

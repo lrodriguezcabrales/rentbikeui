@@ -2,25 +2,27 @@ serverLink = 'http://localhost/rentbike/web/app_dev.php/';
 
 //'Router' is a name of the router class
 var Router = Backbone.Router.extend ({
-routes: {
-    '': 'list',
-    'list': 'list',
-    'new': 'new',
-    'update': 'update'
-},
+  routes: {
+      '': 'list',
+      'list': 'list',
+      'new': 'new',
+      //'update': 'update'
+      "update/:id":"update"
+  },
 
-list: function(){
-  $('#content').append('jejeje');
-     listUsers();
-},
-new: function () {
-  $('#content').append('jejeje');
-     newUser();
-},
-update: function() {
-  $('#content').append('jejeje');
-     updateUser();
-}
+  list: function(){
+    $('#content').empty();
+       listUsers();
+  },
+  new: function () {
+    $('#content').empty();
+       newUser();
+  },
+  update: function(id) {
+    $('#content').empty();
+      updateUser(id);
+  }
+
 });
 
 //'router' is an instance of the Router
@@ -63,6 +65,8 @@ function Text(conf) {
 
   var Text = Backbone.View.extend({
     tpl: '<input type="text"></input>',
+    required: false,
+    labelname: null,
     render: function(where){
       
       var me = this;
@@ -73,9 +77,16 @@ function Text(conf) {
 
       var formgroup = $('<div class="form-group"></div>');
       
-      if(!_.isNull(me.label)){
-        var label = $('<label>'+conf.label+'</label>');
-        formgroup.append(label);
+      me.labelname = conf.label;
+
+      if(!_.isNull(me.labelname)){
+        me.label = $('<label>'+me.labelname+'</label>');
+        formgroup.append(me.label);
+      }
+
+      if(conf.required){
+        me.obj.attr('required', true);
+        me.label.append('<span class="required">*</span>')
       }
 
       formgroup.append(me.obj);
@@ -170,10 +181,10 @@ function listUsers () {
      
     ],
     onItemEditing: function(args) {
-     
         args.cancel = true;
 
-        router.navigate('update', true);
+        var item = args.item;
+        router.navigate('update/'+item.id, true);
      }
   });
 }
@@ -188,58 +199,10 @@ function newUser(argument) {
         var div = $('<div></div>');
 
         var form = $('<form id="form-user"></form>');
-/*
-        var fields = [];
-        var labels = [];
-
-        var firstname = $('<input type="text" id="firstname-user"></input>');
-        var secondname = $('<input type="text" id="secondname-user"></input>');
-        var lastname = $('<input type="text" id="lastname-user"></input>');
-        var secondlastname = $('<input type="text" id="secondlastname-user"></input>');
-        var password = $('<input type="password" id="password-user"></input>');
-
-
-        var labelFirstname = $('<label type="text" for="firstname-user"></label>');
-        var labelSecondname = $('<label type="text" for="secondname-user"></label>');
-        var labelLastname = $('<label type="text" for="lastname-user"></label>');
-        var labelSecondlastname = $('<label type="text" for="secondlastname-user"></label>');
-        var labelPassword = $('<label type="password" for="password-user"></label>');
-
-        fields.push(firstname);
-        fields.push(secondname);
-        fields.push(lastname);
-        fields.push(secondlastname);
-        fields.push(password);
-
-        labels.push(labelFirstname);
-        labels.push(labelSecondname);
-        labels.push(labelLastname);
-        labels.push(labelSecondlastname);
-        labels.push(labelPassword);*/
-
-
-/*        for (var i = 0; i < fields.length; i++) {
-
-           var field = fields[i];
-           var label = labels[i];
-           field.addClass('form-control');
-
-           var formgroup = $('<div class="form-group"></div>');
-           formgroup.append(label);
-           formgroup.append(field);
-
-           form.append(formgroup);   
-        }
-
-        div.append(form);
-
-*/        
-
-
-        //$(this.el).append(div);
 
         var firstname = Text({
           label: 'Nombre',
+          required: true,
           render: form
         });
 
@@ -249,10 +212,15 @@ function newUser(argument) {
         });
         var lastname = Text({
           label: 'Apellido',
+          required: true,
           render: form
         });
         var secondlastname = Text({
           label: 'Segundo apellido',
+          render: form
+        });
+        var email = Text({
+          label: 'Correo',
           render: form
         });
         var password = Text({
@@ -266,15 +234,16 @@ function newUser(argument) {
         div.append(btnSave);
 
         btnSave.click(function (argument) {
-            debugger
-            var json = {
+            var data = {
               'firstname': firstname.value(),
               'lastname': lastname.value(),
               'secondname': secondname.value(),
               'secondlastname': secondlastname.value(),
+              'email': email.value(),
               'password': password.value()
             };
 
+            data = JSON.stringify(data);
 
             var parameters = {
                 type: 'POST',     
@@ -282,13 +251,12 @@ function newUser(argument) {
                 url : serverLink + 'user',
                 contentType: 'application/json',
                 dataType: "json",        
-                data: json,        
+                data: data,        
                 success: function(response){  
-                  debugger  
+                  alert(response.msj);  
                 },
                 error: function (e) {
                   alert('error');
-                  debugger
                 }
             };
 
@@ -315,20 +283,119 @@ function newUser(argument) {
   var newUser = new NewUserView();
   newUser.render('#content');
 
-//    /*console.log('Crear Usuario');
-//    var newUser = new User({
-//       "email":"pepito@gmail.com",
-//       "firstname":"Pepito",
-//       "lastname":"Perez",
-//       "password": "12345"
-//       }
-//    );
-
-//    libroNuevo.save();
-//    coleccion_libros.add(newUser);*/
-
 }
 
-function updateUser() {
-  alert('VIsta Update')
+function updateUser(id) {
+
+  var me = this;
+
+  $("#gridUser").remove();
+
+  var UpdateUserView = Backbone.View.extend({
+     render: function(where){
+        var parameters = {
+            type: 'GET',     
+            //headers: K.currentApplication.buildRequestHeader(),                
+            url : serverLink + 'user/'+ id,
+            contentType: 'application/json',
+            dataType: "json",
+            success: function(response){  
+              var div = $('<div></div>');
+
+              var form = $('<form id="form-user"></form>');
+
+              var firstname = Text({
+                label: 'Nombre',
+                required: true,
+                render: form
+              });
+              firstname.value(response.firstname);
+
+              var secondname = Text({
+                label: 'Segundo nombre',
+                render: form
+              });
+              secondname.value(response.secondname);
+
+              var lastname = Text({
+                label: 'Apellido',
+                required: true,
+                render: form
+              });
+              lastname.value(response.lastname);
+
+              var secondlastname = Text({
+                label: 'Segundo apellido',
+                render: form
+              });
+              secondlastname.value(response.secondlastname);
+
+              var email = Text({
+                label: 'Correo',
+                render: form
+              });
+              email.value(response.email);
+
+              var password = Text({
+                label: 'Contraseña',
+                render: form
+              });
+              password.value(response.password);
+
+              div.append(form);
+
+              var btnSave = $('<button>Guardar</button>');
+              div.append(btnSave);
+
+              btnSave.click(function (argument) {
+                  var data = {
+                    'firstname': firstname.value(),
+                    'lastname': lastname.value(),
+                    'secondname': secondname.value(),
+                    'secondlastname': secondlastname.value(),
+                    'email': email.value(),
+                    'password': password.value()
+                  };
+
+                  data = JSON.stringify(data);
+
+                  var parameters = {
+                      type: 'PUT',     
+                      //headers: K.currentApplication.buildRequestHeader(),                
+                      url : serverLink + 'user/'+id,
+                      contentType: 'application/json',
+                      dataType: "json",        
+                      data: data,        
+                      success: function(response){  
+                        alert(response.msj);  
+                      },
+                      error: function (e) {
+                        alert('error');
+                      }
+                  };
+
+                  $.ajax(parameters); 
+              });
+
+
+              setTimeout(function(){
+                $(where).append(div);
+              }, 100);
+
+            },
+            error: function (e) {
+              alert('Error al cargar los datos');
+            }
+        };
+
+        $.ajax(parameters); 
+      
+
+        return this;
+     }
+  });      
+
+  var updateUser = new UpdateUserView();
+  updateUser.render('#content');
+
 }
