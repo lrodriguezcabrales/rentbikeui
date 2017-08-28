@@ -7,7 +7,9 @@ var Router = Backbone.Router.extend ({
       'list': 'list',
       'new': 'new',
       //'update': 'update'
-      "update/:id":"update"
+      "update/:id":"update",
+      'client': 'list',
+
   },
 
   list: function(){
@@ -76,7 +78,8 @@ function Text(conf) {
       me.obj.addClass('form-control');
 
       var formgroup = $('<div class="form-group"></div>');
-      
+      formgroup.addClass('col-sm-6');
+
       me.labelname = conf.label;
 
       if(!_.isNull(me.labelname)){
@@ -88,6 +91,8 @@ function Text(conf) {
         me.obj.attr('required', true);
         me.label.append('<span class="required">*</span>')
       }
+
+
 
       formgroup.append(me.obj);
 
@@ -124,10 +129,12 @@ function Text(conf) {
 function listUsers () {
 
 
-  $('body').append('<div id="gridUser" class="grid"></div>');
-/*  $('body').find('#content').append('<div id="gridUser"></div>');*/
-
-  $("#gridUser").jsGrid({
+/*  $('body').append('<div id="gridUser" class="grid"></div>');*/
+  
+  setTimeout(function (argument) {
+    $('body').find('#content').append('<div id="gridUser"></div>');
+  
+    $("#gridUser").jsGrid({
     height: "auto",
     width: "100%",
     sorting: true,
@@ -187,6 +194,10 @@ function listUsers () {
         router.navigate('update/'+item.id, true);
      }
   });
+  }, 100)
+  
+
+  
 }
 
 function newUser(argument) {
