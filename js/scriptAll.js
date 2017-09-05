@@ -8,8 +8,8 @@ var Router = Backbone.Router.extend ({
       'new': 'new',
       //'update': 'update'
       "update/:id":"update",
-      'client': 'list',
-
+      'client': 'clientList',
+      'newCLient': 'newCLient'
   },
 
   list: function(){
@@ -23,6 +23,10 @@ var Router = Backbone.Router.extend ({
   update: function(id) {
     $('#content').empty();
       updateUser(id);
+  },
+  clientList: function () {
+    $('#content').empty();
+       listCLient();
   }
 
 });
@@ -45,6 +49,23 @@ var User = Backbone.Model.extend({
      roles: null
   },
   url: 'http://localhost/rentbike/web/app_dev.php/user',
+  initialize: function(){
+     // TODO: acciones de inicialización del modelo
+  }
+});
+
+var Client = Backbone.Model.extend({
+  defaults:{
+     id: null,
+     firstname: null,
+     secondname: null,
+     lastname: null,
+     secondlastname: null,
+     password: null,
+     identificationNumber: null,
+     identificationType: null
+  },
+  url: 'http://localhost/rentbike/web/app_dev.php/client',
   initialize: function(){
      // TODO: acciones de inicialización del modelo
   }
@@ -129,7 +150,7 @@ function Text(conf) {
 function listUsers () {
 
 
-/*  $('body').append('<div id="gridUser" class="grid"></div>');*/
+  //$('body').append('<div id="gridUser" class="grid"></div>');
   
   setTimeout(function (argument) {
     $('body').find('#content').append('<div id="gridUser"></div>');
@@ -195,9 +216,6 @@ function listUsers () {
      }
   });
   }, 100)
-  
-
-  
 }
 
 function newUser(argument) {
@@ -409,4 +427,72 @@ function updateUser(id) {
   var updateUser = new UpdateUserView();
   updateUser.render('#content');
 
+}
+
+function listClients () {
+  
+  setTimeout(function (argument) {
+    $('body').find('#content').append('<div id="gridClient"></div>');
+  
+    $("#gridClient").jsGrid({
+    height: "auto",
+    width: "100%",
+    sorting: true,
+    paging: false,
+    autoload: true,
+    editing: true,
+    controller: {
+        loadData: function() {
+            var d = $.Deferred();
+
+            $.ajax({
+                url: "http://localhost/rentbike/web/app_dev.php/client/list",
+                dataType: "json"
+            }).done(function(response) {
+                d.resolve(response.data);
+            });
+
+            return d.promise();
+        }
+    },
+    fields: [
+        {
+           name: "firstname", 
+           type: "text"
+        },
+        {
+           name: "lastname", 
+           type: "text"
+        },
+        {
+           name: "email", 
+           type: "text"
+        },
+        {
+           type: "control",
+           modeSwitchButton: false,
+           editButton: true,
+           headerTemplate: function() {
+              var btnAdd = $('<button type="button"> Add</button>');
+
+              btnAdd.click(function (argument) {
+                 
+                 router.navigate('new', true);
+
+                 
+              })
+             
+              return btnAdd;
+           }
+        },
+     
+    ],
+    onItemEditing: function(args) {
+        args.cancel = true;
+
+        var item = args.item;
+        router.navigate('update/'+item.id, true);
+     }
+  });
+  }, 100)
 }
