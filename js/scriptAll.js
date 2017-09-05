@@ -8,8 +8,8 @@ var Router = Backbone.Router.extend ({
       'new': 'new',
       //'update': 'update'
       "update/:id":"update",
-      'client': 'list',
-
+      'client': 'clientList',
+      'newCLient': 'newCLient'
   },
 
   list: function(){
@@ -23,6 +23,10 @@ var Router = Backbone.Router.extend ({
   update: function(id) {
     $('#content').empty();
       updateUser(id);
+  },
+  clientList: function () {
+    $('#content').empty();
+       listCLient();
   }
 
 });
@@ -45,6 +49,23 @@ var User = Backbone.Model.extend({
      roles: null
   },
   url: 'http://localhost/rentbike/web/app_dev.php/user',
+  initialize: function(){
+     // TODO: acciones de inicialización del modelo
+  }
+});
+
+var Client = Backbone.Model.extend({
+  defaults:{
+     id: null,
+     firstname: null,
+     secondname: null,
+     lastname: null,
+     secondlastname: null,
+     password: null,
+     identificationNumber: null,
+     identificationType: null
+  },
+  url: 'http://localhost/rentbike/web/app_dev.php/client',
   initialize: function(){
      // TODO: acciones de inicialización del modelo
   }
@@ -133,106 +154,137 @@ function Combo(conf) {
   setTimeout(function (argument) {
     conf.render.append(input);
 
-      $("#combo").kendoComboBox({
-    dataTextField: "text",
-    dataValueField: "value",
-    dataSource: [
+    $("#combo").kendoComboBox({
+      dataTextField: "text",
+      dataValueField: "value",
+      dataSource: [
         { text: "Cotton", value: "1" },
         { text: "Polyester", value: "2" },
         { text: "Cotton/Polyester", value: "3" },
         { text: "Rib Knit", value: "4" }
-    ],
-    filter: "contains",
-    suggest: true,
-    index: 3
-  });
+      ],
+      filter: "contains",
+      suggest: true,
+      index: 3
+    });
 
-  // create ComboBox from select HTML element
-  $("#size").kendoComboBox();
+    // create ComboBox from select HTML element
+    $("#size").kendoComboBox();
 
-  var fabric = $("#combo").data("kendoComboBox");
-  var select = $("#size").data("kendoComboBox");
+    var fabric = $("#combo").data("kendoComboBox");
+    var select = $("#size").data("kendoComboBox");
   
-  })
+  }, 1000)
 
+}
 
+function Grid(conf) {
 
+  debugger
+  var grid = $('<div id="grid"></div>');
+
+  setTimeout(function (argument) {
+    conf.render.append(grid);
+
+        $("#grid").kendoGrid({
+        dataSource: {
+            type: "odata",
+            transport: {
+                read: "http://localhost/rentbike/web/app_dev.php/user/list"
+            },
+            pageSize: 20
+        },
+        height: 550,
+        groupable: true,
+        sortable: true,
+        pageable: {
+            refresh: true,
+            pageSizes: true,
+            buttonCount: 5
+        },
+        columns: [
+          {
+             field: "firstname", 
+             field: "firstname"
+          }
+        ]
+    });
+  }, 1000)
 
 
 }
 
-
 function listUsers () {
 
-  //$('body').append('<div id="gridUser" class="grid"></div>');*/
+  //$('body').append('<div id="gridUser" class="grid"></div>');
   
   setTimeout(function (argument) {
     $('body').find('#content').append('<div id="gridUser"></div>');
   
-    $("#gridUser").jsGrid({
-    height: "auto",
-    width: "100%",
-    sorting: true,
-    paging: false,
-    autoload: true,
-    editing: true,
-    controller: {
-        loadData: function() {
-            var d = $.Deferred();
+    setTimeout(function (argument) {
+      $("#gridUser").jsGrid({
+        height: "auto",
+        width: "100%",
+        sorting: true,
+        paging: false,
+        autoload: true,
+        editing: true,
+        controller: {
+            loadData: function() {
+                var d = $.Deferred();
 
-            $.ajax({
-                url: "http://localhost/rentbike/web/app_dev.php/user/list",
-                dataType: "json"
-            }).done(function(response) {
-                d.resolve(response.data);
-            });
+                $.ajax({
+                    url: "http://localhost/rentbike/web/app_dev.php/user/list",
+                    dataType: "json"
+                }).done(function(response) {
+                    d.resolve(response.data);
+                });
 
-            return d.promise();
-        }
-    },
-    fields: [
-        {
-           name: "firstname", 
-           type: "text"
+                return d.promise();
+            }
         },
-        {
-           name: "lastname", 
-           type: "text"
-        },
-        {
-           name: "email", 
-           type: "text"
-        },
-        {
-           type: "control",
-           modeSwitchButton: false,
-           editButton: true,
-           headerTemplate: function() {
-              var btnAdd = $('<button type="button"> Add</button>');
+        fields: [
+            {
+               name: "firstname", 
+               type: "text"
+            },
+            {
+               name: "lastname", 
+               type: "text"
+            },
+            {
+               name: "email", 
+               type: "text"
+            },
+            {
+               type: "control",
+               modeSwitchButton: false,
+               editButton: true,
+               headerTemplate: function() {
+                  var btnAdd = $('<button type="button"> Add</button>');
 
-              btnAdd.click(function (argument) {
+                  btnAdd.click(function (argument) {
+                     
+                     router.navigate('new', true);
+
+                     
+                  })
                  
-                 router.navigate('new', true);
+                  return btnAdd;
+               }
+            },
+         
+        ],
+        onItemEditing: function(args) {
+            args.cancel = true;
 
-                 
-              })
-             
-              return btnAdd;
-           }
-        },
-     
-    ],
-    onItemEditing: function(args) {
-        args.cancel = true;
-
-        var item = args.item;
-        router.navigate('update/'+item.id, true);
-     }
-  });
-  }, 100)
-  
-
-  
+            var item = args.item;
+            router.navigate('update/'+item.id, true);
+         }
+      });
+    }, 1000)
+      
+  }, 1000);
 }
 
 function newUser(argument) {
@@ -277,6 +329,10 @@ function newUser(argument) {
         });
 
         var comoboTest = Combo({
+          render: fieldset1
+        });
+
+        var gridTest = Grid({
           render: fieldset1
         });
 
@@ -456,4 +512,72 @@ function updateUser(id) {
   var updateUser = new UpdateUserView();
   updateUser.render('#content');
 
+}
+
+function listClients () {
+  
+  setTimeout(function (argument) {
+    $('body').find('#content').append('<div id="gridClient"></div>');
+  
+    $("#gridClient").jsGrid({
+    height: "auto",
+    width: "100%",
+    sorting: true,
+    paging: false,
+    autoload: true,
+    editing: true,
+    controller: {
+        loadData: function() {
+            var d = $.Deferred();
+
+            $.ajax({
+                url: "http://localhost/rentbike/web/app_dev.php/client/list",
+                dataType: "json"
+            }).done(function(response) {
+                d.resolve(response.data);
+            });
+
+            return d.promise();
+        }
+    },
+    fields: [
+        {
+           name: "firstname", 
+           type: "text"
+        },
+        {
+           name: "lastname", 
+           type: "text"
+        },
+        {
+           name: "email", 
+           type: "text"
+        },
+        {
+           type: "control",
+           modeSwitchButton: false,
+           editButton: true,
+           headerTemplate: function() {
+              var btnAdd = $('<button type="button"> Add</button>');
+
+              btnAdd.click(function (argument) {
+                 
+                 router.navigate('new', true);
+
+                 
+              })
+             
+              return btnAdd;
+           }
+        },
+     
+    ],
+    onItemEditing: function(args) {
+        args.cancel = true;
+
+        var item = args.item;
+        router.navigate('update/'+item.id, true);
+     }
+  });
+  }, 100)
 }
