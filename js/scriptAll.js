@@ -124,12 +124,47 @@ function Text(conf) {
   return text;
 }
 
+function Combo(conf) {
+
+  debugger
+
+  var input = $('<input id="combo" placeholder="Select fabric..." style="width: 80%;" />');
+
+  setTimeout(function (argument) {
+    conf.render.append(input);
+
+      $("#combo").kendoComboBox({
+    dataTextField: "text",
+    dataValueField: "value",
+    dataSource: [
+        { text: "Cotton", value: "1" },
+        { text: "Polyester", value: "2" },
+        { text: "Cotton/Polyester", value: "3" },
+        { text: "Rib Knit", value: "4" }
+    ],
+    filter: "contains",
+    suggest: true,
+    index: 3
+  });
+
+  // create ComboBox from select HTML element
+  $("#size").kendoComboBox();
+
+  var fabric = $("#combo").data("kendoComboBox");
+  var select = $("#size").data("kendoComboBox");
+  
+  })
+
+
+
+
+
+}
 
 
 function listUsers () {
 
-
-/*  $('body').append('<div id="gridUser" class="grid"></div>');*/
+  //$('body').append('<div id="gridUser" class="grid"></div>');*/
   
   setTimeout(function (argument) {
     $('body').find('#content').append('<div id="gridUser"></div>');
@@ -210,38 +245,46 @@ function newUser(argument) {
         var div = $('<div></div>');
 
         var form = $('<form id="form-user"></form>');
+        var fieldset1 = $('<fieldset class="sections"></fieldset>');
+        fieldset1.append('<legend class="sections">Información general</legend>');
 
         var firstname = Text({
           label: 'Nombre',
           required: true,
-          render: form
+          render: fieldset1
         });
 
         var secondname = Text({
           label: 'Segundo nombre',
-          render: form
+          render: fieldset1
         });
         var lastname = Text({
           label: 'Apellido',
           required: true,
-          render: form
+          render: fieldset1
         });
         var secondlastname = Text({
           label: 'Segundo apellido',
-          render: form
+          render: fieldset1
         });
         var email = Text({
           label: 'Correo',
-          render: form
+          render: fieldset1
         });
         var password = Text({
           label: 'Contraseña',
-          render: form
+          render: fieldset1
         });
 
+        var comoboTest = Combo({
+          render: fieldset1
+        });
+
+        form.append(fieldset1);
         div.append(form);
 
         var btnSave = $('<button>Guardar</button>');
+        btnSave.addClass('btn btn-primary');
         div.append(btnSave);
 
         btnSave.click(function (argument) {
@@ -314,48 +357,52 @@ function updateUser(id) {
               var div = $('<div></div>');
 
               var form = $('<form id="form-user"></form>');
+              var fieldset1 = $('<fieldset class="sections"></fieldset>')
+              fieldset1.append('<legend class="sections">Información general</legend>');
 
               var firstname = Text({
                 label: 'Nombre',
                 required: true,
-                render: form
+                render: fieldset1
               });
               firstname.value(response.firstname);
 
               var secondname = Text({
                 label: 'Segundo nombre',
-                render: form
+                render: fieldset1
               });
               secondname.value(response.secondname);
 
               var lastname = Text({
                 label: 'Apellido',
                 required: true,
-                render: form
+                render: fieldset1
               });
               lastname.value(response.lastname);
 
               var secondlastname = Text({
                 label: 'Segundo apellido',
-                render: form
+                render: fieldset1
               });
               secondlastname.value(response.secondlastname);
 
               var email = Text({
                 label: 'Correo',
-                render: form
+                render: fieldset1
               });
               email.value(response.email);
 
               var password = Text({
                 label: 'Contraseña',
-                render: form
+                render: fieldset1
               });
               password.value(response.password);
 
+              form.append(fieldset1);
               div.append(form);
 
               var btnSave = $('<button>Guardar</button>');
+              btnSave.addClass('btn btn-primary');
               div.append(btnSave);
 
               btnSave.click(function (argument) {
