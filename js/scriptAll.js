@@ -1,4 +1,4 @@
-serverLink = 'http://localhost/rentbike/web/app_dev.php/';
+serverLink = 'http://localhost:8080/rentbike/web/app_dev.php/';
 
 //'Router' is a name of the router class
 var Router = Backbone.Router.extend ({
@@ -6,10 +6,11 @@ var Router = Backbone.Router.extend ({
       '': 'list',
       'list': 'list',
       'new': 'new',
-      //'update': 'update'
-      "update/:id":"update",
-      'client': 'clientList',
-      'newCLient': 'newCLient'
+      'update/:id':'update',
+      'client': 'listCLient',
+      'newClient': 'newClient',
+      'attribute': 'listAttributeList',
+      'newAttributeList': 'newAttributeList'
   },
 
   list: function(){
@@ -24,10 +25,22 @@ var Router = Backbone.Router.extend ({
     $('#content').empty();
       updateUser(id);
   },
-  clientList: function () {
+  listCLient: function () {
     $('#content').empty();
        listCLient();
-  }
+  },
+  newClient: function () {
+    $('#content').empty();
+       newClient();
+  },
+  listAttributeList: function () {
+    $('#content').empty();
+       listAttributeList();
+  },
+  newAttributeList: function () {
+    $('#content').empty();
+       newAttributeList();
+  },
 
 });
 
@@ -48,13 +61,13 @@ var User = Backbone.Model.extend({
      password: null,
      roles: null
   },
-  url: 'http://localhost/rentbike/web/app_dev.php/user',
+  url: serverLink+'user',
   initialize: function(){
      // TODO: acciones de inicialización del modelo
   }
 });
 
-var Client = Backbone.Model.extend({
+var ClientModel = Backbone.Model.extend({
   defaults:{
      id: null,
      firstname: null,
@@ -65,7 +78,7 @@ var Client = Backbone.Model.extend({
      identificationNumber: null,
      identificationType: null
   },
-  url: 'http://localhost/rentbike/web/app_dev.php/client',
+  url: serverLink+'client',
   initialize: function(){
      // TODO: acciones de inicialización del modelo
   }
@@ -74,7 +87,7 @@ var Client = Backbone.Model.extend({
 var UserCollection = Backbone.Collection.extend({
   model: User,
   url: function() {
-     return 'http://localhost/rentbike/web/app_dev.php/user';
+     return serverLink+'user';
   },
   initialize: function(){
      // TODO: acciones de inicialización del modelo
@@ -147,69 +160,167 @@ function Text(conf) {
 
 function Combo(conf) {
 
-  debugger
+    var Combo = Backbone.View.extend({
+      tpl: '<input id="combo" placeholder="Select ..." style="width: 55%;" />',
+      required: false,
+      labelname: null,
+      render: function(where){
 
-  var input = $('<input id="combo" placeholder="Select fabric..." style="width: 80%;" />');
+          var me = this;
 
-  setTimeout(function (argument) {
-    conf.render.append(input);
+          var input = $(this.tpl);
 
-    $("#combo").kendoComboBox({
-      dataTextField: "text",
-      dataValueField: "value",
-      dataSource: [
-        { text: "Cotton", value: "1" },
-        { text: "Polyester", value: "2" },
-        { text: "Cotton/Polyester", value: "3" },
-        { text: "Rib Knit", value: "4" }
-      ],
-      filter: "contains",
-      suggest: true,
-      index: 3
+          var formgroup = $('<div class="form-group"></div>');
+          formgroup.addClass('col-sm-6');
+
+          if(!_.isNull(conf.labelname)){
+            this.label = $('<label>'+conf.labelname+'</label>');
+            formgroup.append(this.label);
+          }
+
+          if(conf.required){
+            this.obj.attr('required', true);
+            this.label.append('<span class="required">*</span>')
+          }
+          
+          formgroup.append($(this.tpl));
+
+          conf.render.append(formgroup);
+
+          setTimeout(function (argument) {
+             var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: serverLink+conf.url,
+                        type: "get",
+                        dataType: "json"
+                    }
+                },
+                schema: {
+                    total: 'total',
+                    data: 'data'
+                }
+              }); 
+
+              me.comboKendo = $('#combo').kendoComboBox({
+                dataTextField: conf.displayField,
+                dataValueField: conf.valueField,
+                dataSource: dataSource,
+                filter: "contains",
+                suggest: true,
+                index: 3
+              });
+
+              // create ComboBox from select HTML element
+              $("#size").kendoComboBox();
+
+              var fabric = $("#combo").data("kendoComboBox");
+              var select = $("#size").data("kendoComboBox");
+
+
+          }, 1000);
+        
+      },  
+      value: function (value) {
+
+        var me = this;
+        if (value === undefined) {
+
+            me.kendoDataCombobox = me.comboKendo.data("kendoComboBox");
+            var dataItem = me.kendoDataCombobox.dataItem();
+
+           
+            if(dataItem){
+              dataItem = dataItem.toJSON();
+            }else{
+                dataItem = [];
+            }
+
+            return dataItem;  
+        
+
+        } else {
+          me.obj.val(value);
+        }
+      },
+
     });
 
-    // create ComboBox from select HTML element
-    $("#size").kendoComboBox();
+    
+    var combo = new Combo(conf);
+    combo.render(conf.render);
+    
+    return combo;
 
-    var fabric = $("#combo").data("kendoComboBox");
-    var select = $("#size").data("kendoComboBox");
-  
-  }, 1000)
+  //}, 1000);
 
 }
 
 function Grid(conf) {
 
-  debugger
   var grid = $('<div id="grid"></div>');
 
-  setTimeout(function (argument) {
+  var toolbar = $('<div class="toolbar"></div>');
+
+  if(conf.toolbar){
+    for(var i=0; i< conf.toolbar.length; i++){
+      var btnAction = $('<button>'+i.title+'</button>');
+      btnAction.click = conf.click;
+    }
+  }
+  grid.append(toolbar);
+
+  // setTimeout(function (argument) {
+
     conf.render.append(grid);
 
-        $("#grid").kendoGrid({
-        dataSource: {
-            type: "odata",
-            transport: {
-                read: "http://localhost/rentbike/web/app_dev.php/user/list"
-            },
-            pageSize: 20
-        },
-        height: 550,
-        groupable: true,
+    var dataSource = new kendo.data.DataSource({
+      transport: {
+          read: {
+              // the remote service url
+              url: serverLink+conf.url,
+
+              // the request type
+              type: "get",
+
+              // the data type of the returned result
+              dataType: "json",
+
+              // additional custom parameters sent to the remote service
+              // data: {
+              //     lat: 42.42,
+              //     lon: 23.20,
+              //     cnt: 10
+              // }
+          }
+      },
+      // describe the result format
+      schema: {
+          // the data, which the data source will be bound to is in the "list" field of the response
+          // data: "list"
+          total: 'total',
+          data: 'data',
+      },
+
+    }); 
+
+    grid.kendoGrid({
+        dataSource: dataSource,
+        height: 400,
+        groupable: false,
         sortable: true,
         pageable: {
             refresh: true,
             pageSizes: true,
             buttonCount: 5
         },
-        columns: [
-          {
-             field: "firstname", 
-             field: "firstname"
-          }
-        ]
+        columns: conf.columns
     });
-  }, 1000)
+
+   
+
+
+  // }, 1000);
 
 
 }
@@ -219,77 +330,62 @@ function listUsers () {
   //$('body').append('<div id="gridUser" class="grid"></div>');
   
   setTimeout(function (argument) {
-    $('body').find('#content').append('<div id="gridUser"></div>');
+    //$('body').find('#content').append('<div id="gridUser"></div>');
   
-    setTimeout(function (argument) {
-      $("#gridUser").jsGrid({
-        height: "auto",
-        width: "100%",
-        sorting: true,
-        paging: false,
-        autoload: true,
-        editing: true,
-        controller: {
-            loadData: function() {
-                var d = $.Deferred();
+    var gridListUser = Grid({
+      render: $('#content'),
+      url: 'user/list',
+      columns: [
+          {
+             field: "firstname", 
+             title: "Nombre"
+          },
+          {
+             field: "secondname", 
+             title: "Segundo Nombre"
+          },
+          {
+             field: "lastname", 
+             title: "Apellido"
+          },
+          {
+             field: "secondlastname", 
+             title: "Segundo Apellido"
+          },
+          { 
+            command: { 
+              text: "Add", 
+              click: function (argument) {
+                  router.navigate('new', true);
+              } 
+            }, 
+            title: " ", 
+            width: "180px" 
+          },
+          { 
+            command: {
+              text: "Update",
+              click: function (e) {
 
-                $.ajax({
-                    url: "http://localhost/rentbike/web/app_dev.php/user/list",
-                    dataType: "json"
-                }).done(function(response) {
-                    d.resolve(response.data);
-                });
+                e.preventDefault();
 
-                return d.promise();
-            }
-        },
-        fields: [
-            {
-               name: "firstname", 
-               type: "text"
-            },
-            {
-               name: "lastname", 
-               type: "text"
-            },
-            {
-               name: "email", 
-               type: "text"
-            },
-            {
-               type: "control",
-               modeSwitchButton: false,
-               editButton: true,
-               headerTemplate: function() {
-                  var btnAdd = $('<button type="button"> Add</button>');
+                var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                router.navigate('update/'+dataItem.id, true);
+              } 
+            }, 
+            title: " ", 
+            width: "180px" 
+          }
+      ],
 
-                  btnAdd.click(function (argument) {
-                     
-                     router.navigate('new', true);
-
-                     
-                  })
-                 
-                  return btnAdd;
-               }
-            },
-         
-        ],
-        onItemEditing: function(args) {
-            args.cancel = true;
-
-            var item = args.item;
-            router.navigate('update/'+item.id, true);
-         }
-      });
-    }, 1000)
+    });
       
   }, 1000);
 }
 
 function newUser(argument) {
 
-  $("#gridUser").remove();
+  //$("#gridUser").remove();
 
   var NewUserView = Backbone.View.extend({
      render: function(where){
@@ -328,13 +424,7 @@ function newUser(argument) {
           render: fieldset1
         });
 
-        var comoboTest = Combo({
-          render: fieldset1
-        });
 
-        var gridTest = Grid({
-          render: fieldset1
-        });
 
         form.append(fieldset1);
         div.append(form);
@@ -399,7 +489,7 @@ function updateUser(id) {
 
   var me = this;
 
-  $("#gridUser").remove();
+  //$("#gridUser").remove();
 
   var UpdateUserView = Backbone.View.extend({
      render: function(where){
@@ -514,70 +604,320 @@ function updateUser(id) {
 
 }
 
-function listClients () {
+function listCLient () {
   
   setTimeout(function (argument) {
-    $('body').find('#content').append('<div id="gridClient"></div>');
+    //$('body').find('#content').append('<div id="grid"></div>');
   
-    $("#gridClient").jsGrid({
-    height: "auto",
-    width: "100%",
-    sorting: true,
-    paging: false,
-    autoload: true,
-    editing: true,
-    controller: {
-        loadData: function() {
-            var d = $.Deferred();
+    var gridListClient = Grid({
+      render: $('#content'),
+      url: 'client/list',
+      columns: [
+          {
+             field: "fullname", 
+             title: "Nombre"
+          },
+          {
+            field: 'identificationNumber',
+            title: 'Identificación'
+          },
+          {
+            field: 'content',
+            title: 'Tipo',
+            template:"#: (content) ? content : '' #",
+          },
+          { 
+            command: { 
+              text: "Add", 
+              click: function (argument) {
+                  router.navigate('new', true);
+              } 
+            }, 
+            title: " ", 
+            width: "180px" 
+          },
+          { 
+            command: {
+              text: "Update",
+              click: function (e) {
 
-            $.ajax({
-                url: "http://localhost/rentbike/web/app_dev.php/client/list",
-                dataType: "json"
-            }).done(function(response) {
-                d.resolve(response.data);
-            });
+                e.preventDefault();
 
-            return d.promise();
+                // var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                // router.navigate('update/'+dataItem.id, true);
+              } 
+            }, 
+            title: " ", 
+            width: "180px" 
+          }
+      ],
+      toolbar: [
+        {
+          title: 'Add',
+          click: function (argument) {
+            alert ('JAJAJAJAJ')
+          }
         }
-    },
-    fields: [
-        {
-           name: "firstname", 
-           type: "text"
-        },
-        {
-           name: "lastname", 
-           type: "text"
-        },
-        {
-           name: "email", 
-           type: "text"
-        },
-        {
-           type: "control",
-           modeSwitchButton: false,
-           editButton: true,
-           headerTemplate: function() {
-              var btnAdd = $('<button type="button"> Add</button>');
-
-              btnAdd.click(function (argument) {
-                 
-                 router.navigate('new', true);
-
-                 
-              })
-             
-              return btnAdd;
-           }
-        },
-     
-    ],
-    onItemEditing: function(args) {
-        args.cancel = true;
-
-        var item = args.item;
-        router.navigate('update/'+item.id, true);
-     }
-  });
-  }, 100)
+      ]
+    });      
+  }, 1000);
 }
+
+function newClient(argument) {
+
+  $("#content").empty();
+
+  var clientView = Backbone.View.extend({
+     render: function(where){
+          
+        var div = $('<div></div>');
+
+        var form = $('<form id="form-client"></form>');
+        var fieldset1 = $('<fieldset class="sections"></fieldset>');
+        fieldset1.append('<legend class="sections">Información general</legend>');
+
+        var identificationNumber = Text({
+          label: 'Identificación',
+          render: fieldset1
+        });
+
+        var identificationType = Combo({
+          url: 'attributelist/list',
+          labelname: 'Tipo',
+          displayField: 'content',
+          valueField: 'value',
+          render: fieldset1
+        });
+
+        var firstname = Text({
+          label: 'Nombre',
+          required: true,
+          render: fieldset1
+        });
+
+        var secondname = Text({
+          label: 'Segundo nombre',
+          render: fieldset1
+        });
+        var lastname = Text({
+          label: 'Apellido',
+          required: true,
+          render: fieldset1
+        });
+        var secondlastname = Text({
+          label: 'Segundo apellido',
+          render: fieldset1
+        });
+        var email = Text({
+          label: 'Correo',
+          render: fieldset1
+        });
+        var password = Text({
+          label: 'Contraseña',
+          render: fieldset1
+        });
+
+
+
+        form.append(fieldset1);
+        div.append(form);
+
+        var btnSave = $('<button>Guardar</button>');
+        btnSave.addClass('btn btn-primary');
+        div.append(btnSave);
+
+        btnSave.click(function (argument) {
+            var data = {
+              'firstname': firstname.value(),
+              'lastname': lastname.value(),
+              'secondname': secondname.value(),
+              'secondlastname': secondlastname.value(),
+              'email': email.value(),
+              'password': password.value(),
+              'identificationNumber': identificationNumber.value(),
+              'identificationType': identificationType.value()
+            };
+
+            data = JSON.stringify(data);
+
+            var parameters = {
+                type: 'POST',     
+                //headers: K.currentApplication.buildRequestHeader(),                
+                url : serverLink + 'client',
+                contentType: 'application/json',
+                dataType: "json",        
+                data: data,        
+                success: function(response){  
+                  alert(response.msj);  
+                },
+                error: function (e) {
+                  alert('error');
+                }
+            };
+
+            $.ajax(parameters); 
+
+
+
+        });
+
+
+        setTimeout(function(){
+          $(where).append(div);
+        }, 500);
+
+        
+        
+
+        
+
+        return this;
+     },
+  });
+
+  var client = new clientView();
+  client.render('#content');
+}
+
+
+function listAttributeList () {
+  
+  setTimeout(function (argument) {
+    
+    var gridAttributeList = Grid({
+      render: $('#content'),
+      url: 'attributelist/list',
+      columns: [
+          {
+             field: "content", 
+             title: "Contenido"
+          },
+          {
+             field: "attributeName", 
+             title: "Atributo"
+          },
+          {
+             field: "value", 
+             title: "Valor"
+          },
+          { 
+            command: { 
+              text: "Add", 
+              click: function (e) {
+                  e.preventDefault();
+                  router.navigate('newAttributeList', true);
+              } 
+            }, 
+            title: " ", 
+            width: "100px" 
+          },
+          { 
+            command: {
+              text: "Update",
+              click: function (e) {
+
+                e.preventDefault();
+
+                // var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                // debugger
+                // router.navigate('update/'+dataItem.id, true);
+              } 
+            }, 
+            title: " ", 
+            width: "100px" 
+          }
+      ]
+    });
+      
+
+  
+   
+  }, 500);
+}
+
+function newAttributeList(argument) {
+
+  $("#content").empty();
+
+  var attributeList = Backbone.View.extend({
+     render: function(where){
+          
+        var div = $('<div></div>');
+
+        var form = $('<form id="form-attributelist"></form>');
+        var fieldset1 = $('<fieldset class="sections"></fieldset>');
+        fieldset1.append('<legend class="sections">Información general</legend>');
+
+        var content = Text({
+          label: 'Contenido',
+          required: true,
+          render: fieldset1
+        });
+
+        var attributeName = Text({
+          label: 'Atributo',
+          render: fieldset1
+        });
+
+        var value = Text({
+          label: 'Valor',
+          required: true,
+          render: fieldset1
+        });
+
+        form.append(fieldset1);
+        div.append(form);
+
+        var btnSave = $('<button>Guardar</button>');
+        btnSave.addClass('btn btn-primary');
+        div.append(btnSave);
+
+        btnSave.click(function (argument) {
+            var data = {
+              'content': content.value(),
+              'attributeName': attributeName.value(),
+              'value': value.value()
+            };
+
+            data = JSON.stringify(data);
+
+            var parameters = {
+                type: 'POST',     
+                //headers: K.currentApplication.buildRequestHeader(),                
+                url : serverLink + 'attributelist',
+                contentType: 'application/json',
+                dataType: "json",        
+                data: data,        
+                success: function(response){  
+                  alert(response.msj);  
+                },
+                error: function (e) {
+                  alert('error');
+                }
+            };
+
+            $.ajax(parameters); 
+
+
+
+        });
+
+
+        setTimeout(function(){
+          $(where).append(div);
+        }, 100);
+
+        
+        
+
+        
+
+        return this;
+     },
+  });
+
+  var attributeListView = new attributeList();
+  attributeListView.render('#content');
+
+}
+
