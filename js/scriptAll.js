@@ -3,25 +3,25 @@ serverLink = 'http://localhost:8080/rentbike/web/app_dev.php/';
 //'Router' is a name of the router class
 var Router = Backbone.Router.extend ({
   routes: {
-      '': 'list',
-      'list': 'list',
-      'new': 'new',
-      'update/:id':'update',
+      '': 'user',
+      'user': 'user',
+      'newUser': 'newUser',
+      'updateUser/:id':'updateUser',
       'client': 'listCLient',
       'newClient': 'newClient',
       'attribute': 'listAttributeList',
       'newAttributeList': 'newAttributeList'
   },
 
-  list: function(){
+  user: function(){
     $('#content').empty();
        listUsers();
   },
-  new: function () {
+  newUser: function () {
     $('#content').empty();
        newUser();
   },
-  update: function(id) {
+  updateUser: function(id) {
     $('#content').empty();
       updateUser(id);
   },
@@ -264,11 +264,19 @@ function Grid(conf) {
 
   if(conf.toolbar){
     for(var i=0; i< conf.toolbar.length; i++){
-      var btnAction = $('<button>'+i.title+'</button>');
-      btnAction.click = conf.click;
+      debugger
+      var iToolbar = conf.toolbar[i];
+      var btnAction = $('<button type="button" class="btn btn-primary">'+iToolbar.title+'</button>');
+      toolbar.append(btnAction);
+      //btnAction.click = iToolbar.click;
+    
+      btnAction.click(iToolbar.click);
     }
+
+    grid.append(toolbar);
   }
-  grid.append(toolbar);
+
+  
 
   // setTimeout(function (argument) {
 
@@ -353,16 +361,6 @@ function listUsers () {
              title: "Segundo Apellido"
           },
           { 
-            command: { 
-              text: "Add", 
-              click: function (argument) {
-                  router.navigate('new', true);
-              } 
-            }, 
-            title: " ", 
-            width: "180px" 
-          },
-          { 
             command: {
               text: "Update",
               click: function (e) {
@@ -370,14 +368,21 @@ function listUsers () {
                 e.preventDefault();
 
                 var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-                router.navigate('update/'+dataItem.id, true);
+                router.navigate('updateUser/'+dataItem.id, true);
               } 
             }, 
             title: " ", 
             width: "180px" 
           }
       ],
-
+      toolbar: [
+        { 
+          title: "Add", 
+          click: function (argument) {
+              router.navigate('newUser', true);
+          }
+        }
+      ]
     });
       
   }, 1000);
@@ -654,8 +659,10 @@ function listCLient () {
       toolbar: [
         {
           title: 'Add',
-          click: function (argument) {
-            alert ('JAJAJAJAJ')
+          click: function (e) {
+            // debugger
+            e.preventDefault();
+            router.navigate('newClient', true);
           }
         }
       ]
