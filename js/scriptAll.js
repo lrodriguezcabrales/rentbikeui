@@ -1,4 +1,5 @@
-serverLink = 'http://localhost:8080/rentbike/web/app_dev.php/';
+//serverLink = 'http://localhost:8080/rentbike/web/app_dev.php/';
+serverLink = 'http://localhost/rentbike/web/app_dev.php/';
 
 //'Router' is a name of the router class
 var Router = Backbone.Router.extend ({
@@ -10,7 +11,10 @@ var Router = Backbone.Router.extend ({
       'client': 'listCLient',
       'newClient': 'newClient',
       'attribute': 'listAttributeList',
-      'newAttributeList': 'newAttributeList'
+      'newAttributeList': 'newAttributeList',
+      'vehicle': 'listVehicle',
+      'newVehicle': 'newVehicle',
+      'updateVehicle': 'updateVehicle',
   },
 
   user: function(){
@@ -41,7 +45,14 @@ var Router = Backbone.Router.extend ({
     $('#content').empty();
        newAttributeList();
   },
-
+  listVehicle: function () {
+    $('#content').empty();
+       listVehicle();
+  },
+  newVehicle: function () {
+    $('#content').empty();
+       newVehicle();
+  },
 });
 
 //'router' is an instance of the Router
@@ -264,7 +275,6 @@ function Grid(conf) {
 
   if(conf.toolbar){
     for(var i=0; i< conf.toolbar.length; i++){
-      debugger
       var iToolbar = conf.toolbar[i];
       var btnAction = $('<button type="button" class="btn btn-primary">'+iToolbar.title+'</button>');
       toolbar.append(btnAction);
@@ -808,17 +818,6 @@ function listAttributeList () {
              title: "Valor"
           },
           { 
-            command: { 
-              text: "Add", 
-              click: function (e) {
-                  e.preventDefault();
-                  router.navigate('newAttributeList', true);
-              } 
-            }, 
-            title: " ", 
-            width: "100px" 
-          },
-          { 
             command: {
               text: "Update",
               click: function (e) {
@@ -833,11 +832,18 @@ function listAttributeList () {
             title: " ", 
             width: "100px" 
           }
+      ],
+      toolbar: [
+        {
+          title: 'Add',
+          click: function (e) {
+            // debugger
+            e.preventDefault();
+            router.navigate('newAttributeList', true);
+          }
+        }
       ]
     });
-      
-
-  
    
   }, 500);
 }
@@ -928,3 +934,57 @@ function newAttributeList(argument) {
 
 }
 
+function listVehicle () {
+  
+  setTimeout(function (argument) {
+    
+    var gridAttributeList = Grid({
+      render: $('#content'),
+      url: 'vehicle/list',
+      columns: [
+          {
+             field: "code", 
+             title: "Codigo"
+          },
+          {
+             field: "name", 
+             title: "Nombre"
+          },
+          {
+             field: "description", 
+             title: "Descripcion"
+          },
+          {
+             field: "price", 
+             title: "Precio"
+          },
+          { 
+            command: {
+              text: "Update",
+              click: function (e) {
+
+                e.preventDefault();
+
+                // var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                // debugger
+                // router.navigate('update/'+dataItem.id, true);
+              } 
+            }, 
+            title: " ", 
+            width: "100px" 
+          }
+      ],
+      toolbar: [
+        {
+          title: 'Add',
+          click: function (e) {
+            // debugger
+            e.preventDefault();
+            router.navigate('newVehicle', true);
+          }
+        }
+      ]
+    });
+   
+  }, 500);
+}
