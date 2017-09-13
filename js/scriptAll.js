@@ -988,3 +988,111 @@ function listVehicle () {
    
   }, 500);
 }
+
+function newVehicle(argument) {
+
+  $("#content").empty();
+
+  var attributeList = Backbone.View.extend({
+     render: function(where){
+          
+        var div = $('<div></div>');
+
+        var form = $('<form id="form-vehicle"></form>');
+        var fieldset1 = $('<fieldset class="sections"></fieldset>');
+        fieldset1.append('<legend class="sections">Información general</legend>');
+
+        var name = Text({
+          label: 'Nombre',
+          required: true,
+          render: fieldset1
+        });
+
+        var description = Text({
+          label: 'Descripcion',
+          render: fieldset1
+        });
+
+        var price = Text({
+          label: 'Precio',
+          required: true,
+          render: fieldset1
+        });
+
+        var amount = Text({
+          label: 'Cantidad',
+          required: true,
+          render: fieldset1
+        });
+
+        var numAvailable = Text({
+          label: 'Disponibles',
+          required: false,
+          render: fieldset1
+        });
+
+
+        var numBusy = Text({
+          label: 'Ocupadas',
+          required: false,
+          render: fieldset1
+        });
+
+        form.append(fieldset1);
+        div.append(form);
+
+        var btnSave = $('<button>Guardar</button>');
+        btnSave.addClass('btn btn-primary');
+        div.append(btnSave);
+
+        btnSave.click(function (argument) {
+            var data = {
+              'name': name.value(),
+              'description': description.value(),
+              'price': price.value(),
+              'amount': amount.value(),
+              'numAvailable': numAvailable.value(),
+              'numBusy': numBusy.value()
+            };
+
+            data = JSON.stringify(data);
+
+            var parameters = {
+                type: 'POST',     
+                //headers: K.currentApplication.buildRequestHeader(),                
+                url : serverLink + 'vehicle',
+                contentType: 'application/json',
+                dataType: "json",        
+                data: data,        
+                success: function(response){  
+                  alert(response.msj);  
+                },
+                error: function (e) {
+                  alert('error');
+                }
+            };
+
+            $.ajax(parameters); 
+
+
+
+        });
+
+
+        setTimeout(function(){
+          $(where).append(div);
+        }, 100);
+
+        
+        
+
+        
+
+        return this;
+     },
+  });
+
+  var attributeListView = new attributeList();
+  attributeListView.render('#content');
+
+}
